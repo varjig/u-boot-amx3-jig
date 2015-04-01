@@ -1,0 +1,15 @@
+if TARGET_VARSOMAM33
+
+config SYS_BOARD
+	default "varsomam33"
+
+config SYS_VENDOR
+	default "ti"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "varsomam33"
+
+endif
