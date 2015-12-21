@@ -88,6 +88,25 @@ static void board_varsomam43_phy2_enable(void)
 	writel(temp, AM33XX_GPIO4_BASE + OMAP_GPIO_DATAOUT);
 }
 
+/* According Table 4-10 (pag 44) of AM437x Sitara Processors (Rev. B) datasheet,
+ * after reset, gpmc_clk is in mode7 with pulldown => gpio2_1 with pulldown.
+ * If Wilink8 is present, there's a 4.7 kOhm pullup that would cause reading 1
+ * on the pin.
+ * If Wilink8 is not present, the pin should be floating, cause reading 0.
+ */
+
+static int board_varsomam43_wilink8_present;
+static int board_varsomam43_wilink8_check(void)
+{
+	/* enable module */
+	writel(0, AM33XX_GPIO2_BASE + OMAP_GPIO_CTRL);
+
+	/* Get input */
+	board_varsomam43_wilink8_present = readl(AM33XX_GPIO2_BASE + OMAP_GPIO_DATAIN);
+	board_varsomam43_wilink8_present &= (1 << 1);
+
+	return board_varsomam43_wilink8_present;
+}
 
 /*
  * Read header information from EEPROM into global structure.
@@ -694,8 +713,11 @@ int board_init(void)
 	/* Reset var-som-am43 PHY1 */
 	board_varsomam43_phy1_enable();
 
-	/* Reset var-som-am43 PHY2 */
-	board_varsomam43_phy2_enable();
+	/* Check var-som-am43 Wilink8 */
+	if (!board_varsomam43_wilink8_check()) {
+		/* Reset var-som-am43 PHY2 */
+		board_varsomam43_phy2_enable();
+	}
 
 	/* Enable 32KHz CLKOUT2 signal, required for WL8 */
 	board_varsomam43_32KHz_clkout2_enable();
@@ -706,6 +728,13 @@ int board_init(void)
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init(void)
 {
+	if (board_varsomam43_wilink8_present) {
+		puts("Wilink8 present\n");
+		setenv("fdtfile", "var-som-am43.dtb");
+	} else {
+		puts("Wilink8 not present\n");
+		setenv("fdtfile", "var-som-am43-eth1.dtb");
+	}
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	char safe_string[HDR_NAME_LEN + 1];
 	struct am43xx_board_id header;
