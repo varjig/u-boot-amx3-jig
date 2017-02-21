@@ -366,7 +366,7 @@
 #ifdef CONFIG_BOOTDELAY
 #undef CONFIG_BOOTDELAY
 #endif
-#define CONFIG_BOOTDELAY       1
+#define CONFIG_BOOTDELAY       -1
 
 #ifdef CONFIG_SPL_OS_BOOT
 #undef CONFIG_SPL_OS_BOOT
