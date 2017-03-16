@@ -260,7 +260,18 @@
 				"bootz ${loadaddr} - ${fdtaddr}; " \
 			"fi;" \
 		"fi\0" \
-	"netboot=echo Booting from network ...; setenv autoload no; dhcp; tftp ${loadaddr} ${bootfile}; tftp ${fdtaddr} ${fdtfile}; run netargs; bootz ${loadaddr} - ${fdtaddr} \0" 
+	"netboot=echo Booting from network ...; setenv autoload no; dhcp; tftp ${loadaddr} ${bootfile}; tftp ${fdtaddr} ${fdtfile}; run netargs; bootz ${loadaddr} - ${fdtaddr} \0" \
+	"choose_dtb=" \
+		"if test \"${wifi}\" = \"yes\"; then " \
+			"setenv fdtfile var-som-am43.dtb; " \
+		"else " \
+			"if test \"${nand}\" = \"yes\"; then " \
+				"setenv fdtfile var-som-am43-nowifi.dtb; " \
+			"else " \
+				"setenv fdtfile var-som-am43-nowifi-nonand.dtb; " \
+			"fi; " \
+		"fi; \0"
+
 
 #define CONFIG_BOOTCOMMAND \
 	"run mmcboot;" \
@@ -380,5 +391,10 @@
 #define CONFIG_CMD_SPL_WRITE_SIZE	CONFIG_SYS_NAND_BLOCK_SIZE
 #endif
 #endif /* !CONFIG_NAND */
+
+#ifdef CONFIG_BOOTDELAY
+#undef CONFIG_BOOTDELAY
+#endif
+#define CONFIG_BOOTDELAY       -1
 
 #endif	/* __CONFIG_AM43XX_EVM_H */
